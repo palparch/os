@@ -1,21 +1,37 @@
 #! /usr/bin/bash
 
-set -e
+#set -e
 
-if [[ $# == 1 ]]; then
-    echo "Argument is:" 1
-    nasm -f bin $1.asm -o $1.bin
-    qemu-system-x86_64 -nographic $1.bin
+while getopts ":fw:" option; do
+    case $option in
+        f) # display Help
+            #cat /dev/null > bootloader.bin
+            #for i in $OPTARG; do
+                #nasm -f bin $i.asm -o $i.bin
+                #cat $i.bin >> bootloader.bin
+            youname="$OPTARG"   
+            echo $OPTARG
+            #done
+            #qemu-system-x86_64 -nographic bootloader.bin
+        ;;
+        w)
+            echo "i work hard (he works hard) every day of my life"
+        ;;
+    esac
+done
 
-elif [[ $# -ge 2 ]]; then
-    echo "Arguments are more than 2" 
-    cat /dev/null > bootloader.bin
-    for i in $@; do
-        nasm -f bin $i.asm -o $i.bin
-        cat $i.bin >> bootloader.bin
-    done
-    qemu-system-x86_64 -nographic bootloader.bin
+echo "$youname"
 
-else
-    echo "I don't understand:" $@
-fi
+#case "$1" in
+#    "--files")
+#        cat /dev/null > bootloader.bin
+#        for i in $@; do
+#            nasm -f bin $i.asm -o $i.bin
+#            cat $i.bin >> bootloader.bin
+#        done
+#        qemu-system-x86_64 -nographic bootloader.bin
+#        ;;
+#    *)
+#        echo "I don't understand:" $@
+#        exit 1
+#esac
