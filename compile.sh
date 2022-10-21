@@ -1,5 +1,7 @@
 #! /usr/bin/bash
 
+set -e
+
 if [[ $# == 1 ]]; then
     echo "Argument is:" 1
     nasm -f bin $1.asm -o $1.bin

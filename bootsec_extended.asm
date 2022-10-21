@@ -1,13 +1,62 @@
 [org 0x7e00]
 
-mov bx, ExtendedSuccess
-call PrintString
-
-jmp $
+jmp EnterProtectedMode
 
 %include "print.asm"
+%include "gdt.asm"
 
-ExtendedSuccess:
-    db 'Woohoo we are in extended space'
+KCDataPort equ 0x60
+KCCommandPort equ 0x64
+KCDisableKbd equ 0xAD
+KCEnableKbd equ 0xAE
+KCReadOutputPort equ 0xD0
+KCWriteOutputPort equ 0xD1
+
+EnterProtectedMode:
+    call EnableA20
+    cli ; disable interrupts
+    lgdt [gdt_descriptor]
+    mov eax, cr0
+    or eax, 1
+    mov cr0, eax
+    jmp codeseg:StartProtectedMode
+
+EnableA20:
+    ; disable keyboard
+    call A20WaitInput
+    mov al, KCDisableKbd
+    out KCCommandPort, al
+
+A20WaitInput:
+    in al, KCCommandPort
+    test al, 2
+    jnz A20WaitInput
+    ret
+
+A20WaitOutput:
+    in al, KbdCtrlCommandPort
+    test al, 1
+    jz A20WaitOutput
+    ret
+
+kcerror:
+    db 'cant use fast a20 92', 0
+
+[bits 32]
+StartProtectedMode:
+    mov ax, dataseg
+    mov ds, ax
+    mov ss, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    mov [0xb80000], byte 'H'
+    mov [0xb80002], byte 'e'
+    mov [0xb80004], byte 'l'
+    mov [0xb80006], byte 'l'
+    mov [0xb80008], byte 'o'
+
+    jmp $
 
 times 2048-($-$$) db 0

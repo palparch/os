@@ -1,0 +1,11 @@
+#! /usr/bin/bash
+
+panx="0.200"
+pany="0.150"
+vidzoom="0.800"
+viddir="/home/tuilip/Videos/os_dev"
+vidfile="4. Moving Into 32-Bit Protected Mode ｜ Make a 64 bit OS From Scratch!! ｜ Part 4 [pXzortxPZR8].webm"
+
+mpv "$viddir"/"$vidfile" --video-zoom="$vidzoom" --video-pan-x="$panx" --video-pan-y="$pany"
+
+
