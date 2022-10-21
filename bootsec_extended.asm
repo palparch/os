@@ -1,5 +1,3 @@
-[org 0x7e00]
-
 jmp EnterProtectedMode
 
 %include "print.asm"
@@ -17,7 +15,7 @@ EnterProtectedMode:
     cli ; disable interrupts
     lgdt [gdt_descriptor]
     mov eax, cr0
-    or eax, 1
+    or al, 1
     mov cr0, eax
     jmp codeseg:StartProtectedMode
 
@@ -27,6 +25,31 @@ EnableA20:
     mov al, KCDisableKbd
     out KCCommandPort, al
 
+    call A20WaitInput
+    mov al, KCReadOutputPort
+    out KCCommandPort, al
+
+    call A20WaitOutput
+    in al, KCDataPort
+    push eax
+
+    call A20WaitInput
+    mov al, KCWriteOutputPort
+    out KCCommandPort, al
+
+    call A20WaitInput
+    pop eax
+    or al, 2
+    out KCDataPort, al
+
+    ; enable keyboard
+    call A20WaitInput
+    mov al, KCEnableKbd
+    out KCCommandPort, al
+
+    call A20WaitInput
+    ret
+
 A20WaitInput:
     in al, KCCommandPort
     test al, 2
@@ -34,13 +57,10 @@ A20WaitInput:
     ret
 
 A20WaitOutput:
-    in al, KbdCtrlCommandPort
+    in al, KCCommandPort
     test al, 1
     jz A20WaitOutput
     ret
-
-kcerror:
-    db 'cant use fast a20 92', 0
 
 [bits 32]
 StartProtectedMode:
