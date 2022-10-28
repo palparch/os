@@ -1,26 +1,42 @@
 #! /usr/bin/bash
 
-#set -e
+set -e
 
-while getopts ":fw:" option; do
+binfile="bootloader.bin"
+server="palpatine"
+serverdir="/home/tuilip/osdev"
+serverloc="$server:$serverdir"
+qemu="qemu-system-x86_64"
+
+while getopts ":f:o:" option; do
     case $option in
-        f) # display Help
-            #cat /dev/null > bootloader.bin
-            #for i in $OPTARG; do
-                #nasm -f bin $i.asm -o $i.bin
-                #cat $i.bin >> bootloader.bin
-            youname="$OPTARG"   
-            echo $OPTARG
-            #done
-            #qemu-system-x86_64 -nographic bootloader.bin
-        ;;
-        w)
-            echo "i work hard (he works hard) every day of my life"
+        f)
+            cat /dev/null > $binfile
+            for i in $OPTARG; do
+                nasm -f bin $i.asm -o $i.bin
+                cat $i.bin >> $binfile
+            done
+            ;;
+        o)
+            echo "$OPTARG"
+            case "$OPTARG" in
+                "local")
+                    $qemu "$binfile" 
+                ;;
+                "server")
+                    scp "$binfile" "$serverloc"/
+                    ssh "$server" "$qemu $serverdir/$binfile -nographic"
+                ;;
+                "nothing")
+                    exit 0
+                ;;
+                *)
+                    echo $"Usage: $0 { local | server | nothing }"
+                    exit 1
+            esac            
         ;;
     esac
 done
-
-echo "$youname"
 
 #case "$1" in
 #    "--files")
